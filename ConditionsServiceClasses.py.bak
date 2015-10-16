@@ -5,7 +5,7 @@ from IOMDataService import IOMService
 
 class LoadException(Exception):
     # def __init__(self, message, Errors):
-    print(inspect.stack()[0][3])
+    print inspect.stack()[0][3]
 
 
 class ConditionsService(IOMService):
@@ -50,9 +50,9 @@ class ConditionsService(IOMService):
             self.get_data_from_database(query, val)
             self.conditions = self.dbdata
         except Exception as e:
-            print(inspect.stack()[0][3], e)
+            print inspect.stack()[0][3], e
         else:
-            print("A list comprising all condition names and ids has been loaded as self.conditions")
+            print "A list comprising all condition names and ids has been loaded as self.conditions"
 
     def load_aliases(self):
         """
@@ -64,9 +64,9 @@ class ConditionsService(IOMService):
             self.get_data_from_database(query, val)
             self.aliases = self.dbdata
         except Exception as e:
-            print(e)
+            print e
         else:
-            print("A list comprising all aliases and ids has been loaded as self.aliases")
+            print "A list comprising all aliases and ids has been loaded as self.aliases"
 
     def load_testimonials_x_conditions(self):
         """
@@ -78,9 +78,9 @@ class ConditionsService(IOMService):
             self.get_data_from_database(query, val)
             self.mainxcond = self.dbdata
         except Exception as e:
-            print(inspect.stack()[0][3], e)
+            print inspect.stack()[0][3], e
         else:
-            print("A list of which conditions are mentioned in each testimonial has been loaded as self.mainxcond")
+            print "A list of which conditions are mentioned in each testimonial has been loaded as self.mainxcond"
 
     def all_assoc_for_respondents(self):
         """
@@ -98,7 +98,7 @@ class ConditionsService(IOMService):
         #as e:
         #	print inspect.stack()[0][3], e
         else:
-            print("A list of which respondents correspond to which conditions has been loaded as self.respondentsXconditions")
+            print "A list of which respondents correspond to which conditions has been loaded as self.respondentsXconditions"
 
     def all_assoc_for_patients(self):
         """
@@ -112,9 +112,9 @@ class ConditionsService(IOMService):
             self.get_data_from_database(query, [])
             self.patientsXconditions = self.dbdata
         except Exception as e:
-            print(inspect.stack()[0][3], e)
+            print inspect.stack()[0][3], e
         else:
-            print("A list of all respondents identified as patients and their conditions has been loaded as self.patientsXconditions")
+            print "A list of all respondents identified as patients and their conditions has been loaded as self.patientsXconditions"
 
     def all_assoc_for_quotes(self):
         """
@@ -127,9 +127,9 @@ class ConditionsService(IOMService):
             self.get_data_from_database(query, [])
             self.quotesXconditions = self.dbdata
         except Exception as e:
-            print(inspect.stack()[0][3], e)
+            print inspect.stack()[0][3], e
         else:
-            print('A list of conditions associated with each quote has been loaded as self.quotesXconditions')
+            print 'A list of conditions associated with each quote has been loaded as self.quotesXconditions'
 
     def all_assoc_for_patient_quotes(self):
         """
@@ -144,9 +144,9 @@ class ConditionsService(IOMService):
             self.get_data_from_database(query, [])
             patient_quotesXconditions = self.dbdata
         except Exception as e:
-            print(inspect.stack()[0][3], e)
+            print inspect.stack()[0][3], e
         else:
-            print("A list of associations for quotes from patients has been loaded as self.patient_quotesXconditions")
+            print "A list of associations for quotes from patients has been loaded as self.patient_quotesXconditions"
 
     ##########################################################################
     #                                                                        #
@@ -271,7 +271,7 @@ class ConditionsService(IOMService):
                  str(rxc['conditionName']) == condition]
                 self.respondent_vectors.append({'conditionName': c['conditionName'], 'edges': list(set(rtemp))})
             except Exception as e:
-                print("Error making respondent vectors : %s" % e)
+                print "Error making respondent vectors : %s" % e
             #Make vectors by testimonial
             try:
                 qtemp = []
@@ -279,7 +279,7 @@ class ConditionsService(IOMService):
                  str(qxc['conditionName']) == condition]
                 self.testimonial_vectors.append({'conditionName': c['conditionName'], 'edges': list(set(qtemp))})
             except Exception as e:
-                print("Error making testimonial vectors: %s" % e)
+                print "Error making testimonial vectors: %s" % e
             #Make vectors by patients
             try:
                 ptemp = []
@@ -287,7 +287,7 @@ class ConditionsService(IOMService):
                  str(pxc['conditionName']) == condition]
                 self.patient_vectors.append({'conditionName': c['conditionName'], 'edges': list(set(ptemp))})
             except Exception as e:
-                print("Error making patient vectors : %s " % e)
+                print "Error making patient vectors : %s " % e
                 #
                 #self.quote_vectors = []
                 #self.respondent_vectors =[]

@@ -1,16 +1,17 @@
 from ConditionsServiceClasses import ConditionsService
 
+
 class ConditionDetector(ConditionsService):
-	"""
-	This finds instances of condition terms in text	
-	"""
-	
-	def __init__(self):
-		ConditionsService.__init__(self)
-		self.load_conditions()
-		self.load_aliases()
-		
-#	Loop through the condition aliases
+    """
+    This finds instances of condition terms in text
+    """
+
+    def __init__(self):
+        ConditionsService.__init__(self)
+        self.load_conditions()
+        self.load_aliases()
+
+# Loop through the condition aliases
 
 # Make a list of unigram aliases
 

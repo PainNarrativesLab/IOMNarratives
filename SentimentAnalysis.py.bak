@@ -1,7 +1,7 @@
 """
 This contains classes used for analyzing the sentiments of input texts
 """
-
+from __future__ import division
 import re
 import pprint
 
@@ -111,7 +111,7 @@ class GroupSentiments:
         db = shelve.open(filepath)
         db[str(self.sentiments['name'])] = self.sentiments
         db.close()
-        print(self.sentiments)
+        print self.sentiments
 
 
 class MultiItemSentimentAnalyzer(ItemSentimentAnalyzer):

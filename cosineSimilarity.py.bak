@@ -43,15 +43,15 @@ class cosine_simiarlity_analyzer():
 
             self.td_matrix[(doc_title, link)] = {}
 
-            for term in fdist.keys():
+            for term in fdist.iterkeys():
                 self.td_matrix[(doc_title, link)][term] = self.tc.tf_idf(term, post)
 
         # Build vectors such that term scores are in the same positions...
         self.distances = {}
-        for (title1, link1) in list(self.td_matrix.keys()):
+        for (title1, link1) in self.td_matrix.keys():
             self.distances[(title1, link1)] = {}
             (max_score, most_similar) = (0.0, (None, None))
-            for (title2, link2) in list(self.td_matrix.keys()):
+            for (title2, link2) in self.td_matrix.keys():
                 # Take care not to mutate the original data structures
                 # since we're in a loop and need the originals multiple times
                 terms1 = self.td_matrix[(title1, link1)].copy()
@@ -84,7 +84,7 @@ class cosine_simiarlity_analyzer():
         # Compute the standard deviation for the distances as a basis of automated thresholding
         std = numpy.std([self.distances[k1][k2] for k1 in self.distances for k2 in self.distances[k1]])
         self.similar = []
-        keys = list(self.td_matrix.keys())
+        keys = self.td_matrix.keys()
         for k1 in keys:
             for k2 in keys:
                 if k1 == k2:
@@ -114,7 +114,7 @@ class cosine_simiarlity_analyzer():
             edges.append({'source': node0, 'target': node1, 'value': s[2] * 1000})
 
         nodes = [{'nodeName': title, 'nodeUrl': url} for ((title, url), idx) in
-                 sorted(list(nodes.items()), key=itemgetter(1))]
+                 sorted(nodes.items(), key=itemgetter(1))]
         json_data = {'nodes': nodes, 'links': edges}
         # This json_data is consumed by matrix_diagram.html
         if not os.path.isdir('out'):
@@ -129,5 +129,5 @@ class cosine_simiarlity_analyzer():
             f = open(os.path.join(os.getcwd(), 'out', os.path.basename(template)), 'w')
             f.write(html)
             f.close()
-            print('Data file written to: %s' % f.name, file=sys.stderr)
+            print >> sys.stderr, 'Data file written to: %s' % f.name
             webbrowser.open('file://' + f.name)

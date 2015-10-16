@@ -34,18 +34,18 @@ from senti_classifier import senti_classifier
 s1 = ['I could only get out of the house twice today']
 s2 = ['I got out of the house twice today']
 ##sentences = ['The movie was the best movie', 'It was the best acting by the actors']
-print(s1)
+print s1
 pos_score, neg_score = senti_classifier.polarity_scores(s1)
-print('positive:')
-print(pos_score)
-print('negative: ')
-print(neg_score)
+print 'positive:'
+print pos_score
+print 'negative: '
+print neg_score
 
-print(s2)
+print s2
 pos_score, neg_score = senti_classifier.polarity_scores(s2)
-print('positive:')
-print(pos_score)
-print('negative')
-print(neg_score)
+print 'positive:'
+print pos_score
+print 'negative'
+print neg_score
 
 ##print synsets_scores['peaceful.a.01']['pos']

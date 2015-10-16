@@ -31,10 +31,10 @@ class SentiWordNetCorpusReader:
 
     def parse_src_file(self):
         lines = codecs.open(self.filename, "r", "utf8").read().splitlines()
-        lines = list(filter((lambda x: not re.search(r"^\s*#", x)), lines))
+        lines = filter((lambda x: not re.search(r"^\s*#", x)), lines)
         for i, line in enumerate(lines):
             fields = re.split(r"\t+", line)
-            fields = list(map(str.strip, fields))
+            fields = map(unicode.strip, fields)
             try:
                 pos, offset, pos_score, neg_score, synset_terms, gloss = fields
             except:
@@ -64,11 +64,11 @@ class SentiWordNetCorpusReader:
         synset_list = wn.synsets(string, pos)
         for synset in synset_list:
             sentis.append(self.senti_synset(synset.name))
-        sentis = [x for x in sentis if x]
+        sentis = filter(lambda x: x, sentis)
         return sentis
 
     def all_senti_synsets(self):
-        for key, fields in self.db.items():
+        for key, fields in self.db.iteritems():
             pos, offset = key
             pos_score, neg_score = fields
             synset = wn._synset_from_pos_and_offset(pos, offset)
@@ -110,4 +110,4 @@ if __name__ == "__main__":
     if os.path.exists(SWN_FILENAME):
         swn = SentiWordNet(SWN_FILENAME)
         for senti_synset in swn.all_senti_synsets():
-            print(senti_synset.synset.name, senti_synset.pos_score, senti_synset.neg_score)
+            print senti_synset.synset.name, senti_synset.pos_score, senti_synset.neg_score

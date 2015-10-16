@@ -148,7 +148,7 @@ class Words(Text):
                 #print('Numerals not removed')
                 pass
 
-        except Exception as exc:
+        except Exception, exc:
             sys.exit("processing failed; %s" % str(exc))  # give a error message
 
     def tag_parts_of_speech(self):
