@@ -18,12 +18,15 @@ except ImportError:
 
 ######################################################################
 
-class SentiWordNetCorpusReader:
+
+class SentiWordNetCorpusReader(object):
+    """
+    Reads senti word net file
+    """
     def __init__(self, filename):
         """
-        Argument:
-        filename -- the name of the text file containing the
-                    SentiWordNet database
+        Args:
+            filename: The name of the text file containing the SentiWordNet database
         """
         self.filename = filename
         self.db = {}
@@ -77,6 +80,7 @@ class SentiWordNetCorpusReader:
 
 ######################################################################
 
+
 class SentiSynset:
     def __init__(self, pos_score, neg_score, synset):
         self.pos_score = pos_score
@@ -95,19 +99,23 @@ class SentiSynset:
     def __repr__(self):
         return "Senti" + repr(self.synset)
 
+
 ######################################################################        
 
+
 if __name__ == "__main__":
-    """
-    If run as
+    pass
 
-    python sentiwordnet.py
-
-    and the file is in this directory, send all of the SentiSynSet
-    name, pos_score, neg_score trios to standard output.
-    """
-    SWN_FILENAME = "SentiWordNet_3.0.0_20100705.txt"
-    if os.path.exists(SWN_FILENAME):
-        swn = SentiWordNet(SWN_FILENAME)
-        for senti_synset in swn.all_senti_synsets():
-            print(senti_synset.synset.name, senti_synset.pos_score, senti_synset.neg_score)
+    # """
+    # If run as
+    #
+    # python sentiwordnet.py
+    #
+    # and the file is in this directory, send all of the SentiSynSet
+    # name, pos_score, neg_score trios to standard output.
+    # """
+    # SWN_FILENAME = "SentiWordNet_3.0.0_20100705.txt"
+    # if os.path.exists(SWN_FILENAME):
+    #     swn = SentiWordNet(SWN_FILENAME)
+    #     for senti_synset in swn.all_senti_synsets():
+    #         print(senti_synset.synset.name, senti_synset.pos_score, senti_synset.neg_score)

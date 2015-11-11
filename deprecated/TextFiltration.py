@@ -76,16 +76,16 @@ class Words(Text):
             try:
                 if self.settings['removePunctuation'] == 'True':
                     pattern = r'\w+|[^\w\s]+'
-                    #self.words.extend(regexp_tokenize(self.text, pattern))
+                    # self.words.extend(regexp_tokenize(self.text, pattern))
                     self.words.extend(word_tokenize(self.text))
                     self.words = [w for w in self.words if w not in string.punctuation]
                     self.words = [w for w in self.words if w not in self.extra_punctuation]
                     self.words = [string.lower(w) for w in self.words]
-                #print('Punctuation removed')
+
                 else:
                     self.words.extend(word_tokenize(self.text))
                     self.words = [string.lower(w) for w in self.words]
-                #print ('punctuation not removed')
+
             except:
 
                 pass

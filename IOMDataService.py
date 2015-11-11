@@ -67,7 +67,7 @@ class IOMService(IOMProjectDAO):
         db = shelve.open(datafile)
         db[label] = self.to_save
         db.close()
-        print((self.to_save))
+        print(self.to_save)
         return self.to_save
 
         # Check whether the problem was there not being a dictionary availble to save
@@ -172,6 +172,6 @@ class ShelveDataHandler(IOMService):
             db[label] = to_save
             db.close()
         except:
-            print(('Error saving to shelve file %s' % file_name))
+            print('Error saving to shelve file %s' % file_name)
         else:
-            print(('Successfully saved to shelve file %s ' % file_name))
+            print('Successfully saved to shelve file %s ' % file_name)

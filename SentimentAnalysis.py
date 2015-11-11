@@ -7,20 +7,184 @@ import pprint
 
 import nltk
 
-import IOMDataService as DS
+# import IOMDataService as DS
 
 # from TextFiltration import Sentences, Words, Lemmatized, Bigrams, Trigrams
 import numpy as np
-from senti_classifier import senti_classifier
+
+#from senti_classifier import senti_classifier
 
 
-class ItemSentimentAnalyzer(DS.IOMService):
+from nltk.corpus import sentiwordnet as swn
+import nltk
+from nltk.corpus import wordnet as wn
+
+
+
+from nltk.corpus import stopwords
+from nltk.tokenize import wordpunct_tokenize
+
+
+class SentiSynsetTools(object):
+    """
+    Tools for loading and working with SentiWordNet stuff
+    """
+
+    def load_senti_synsets_for_word(self, word):
+        """
+        Get a list of senti_synsets for the word
+
+        Args:
+            word: String to lookup
+
+        Returns:
+            List of senti_synsets
+
+        Example:
+            input: slow
+            result:
+                SentiSynset('decelerate.v.01'),
+                SentiSynset('slow.v.02'),
+                SentiSynset('slow.v.03'),
+                SentiSynset('slow.a.01'),
+                SentiSynset('slow.a.02'),
+                SentiSynset('slow.a.04'),
+                SentiSynset('slowly.r.01'),
+                SentiSynset('behind.r.03')]
+        """
+        return list(swn.senti_synsets('slow'))
+
+    def get_scores_from_senti_synset(self, string_name_of_synset, return_format=tuple):
+        """
+        Args:
+            string_name_of_synset: The string name of the synset that want scores for
+            return_format: What kind of object to return. Allowed values are tuple, dict
+        Returns:
+            On default of tuple returns (positiveScore, negativeScore, objScore)
+        """
+        breakdown = swn.senti_synset(string_name_of_synset)
+
+        if return_format is tuple:
+            return (breakdown.pos_score(), breakdown.neg_score(), breakdown.obj_score())
+        elif return_format is dict:
+            return {
+                'posScore': breakdown.pos_score(),
+                'negScore': breakdown.neg_score(),
+                'objScore': breakdown.obj_score()
+                }
+
+
+class DisambiguationTools(object):
+    """
+
+    """
+
+    def disambiguate_word_senses(self, sentence, word):
+        """
+        Attempts to determine the proper sense of the target
+        word from the sentence in which it appears.
+
+        Args:
+            sentence: String representation of the sentence
+            word: String represtnation of word
+
+        Returns:
+            Returns a synset which is the best guess.
+
+        Example:
+            disambiguateWordSenses('A cat is a good pet', 'cat')
+            OUT: Synset('cat.v.01')
+        """
+        wordsynsets = wn.synsets(word)
+        bestScore = 0.0
+        result = None
+        for synset in wordsynsets:
+            for w in nltk.word_tokenize(sentence):
+                score = 0.0
+                for wsynset in wn.synsets(w):
+                    sim = wn.path_similarity(wsynset, synset)
+                    if(sim == None):
+                        continue
+                    else:
+                        score += sim
+                if (score > bestScore):
+                    bestScore = score
+                    result = synset
+        return result
+
+
+class TextPrepare(object):
+    """
+    All tools for preparing text for processing
+    """
+
+    def __init__(self):
+        self.stop_words = set(stopwords.words('english'))
+        self.stop_words.update(['.', ',', '"', "'", '?', '!', ':', ';', '(', ')', '[', ']', '{', '}']) # remove it if you need punctuation
+
+    def prepare_text(self, tweet_text):
+        """
+        Returns a bag of words
+
+        Prospective
+            Remove emoticons
+
+        :param tweet_text:
+        :return: list
+        """
+
+        return [i.lower() for i in wordpunct_tokenize(tweet_text) if i.lower() not in self.stop_words]
+
+
+class ComputeSentiments(object):
+    """
+
+    """
+
+    def __init__(self):
+        self.text_preparer = TextPrepare()
+        self.disambiguator = DisambiguationTools()
+        self.sentitools = SentiSynsetTools()
+
+
+    def compute_sentiments(self, tweet_text):
+        """
+
+        :param tweet_text:
+        :return:
+        """
+        tokens = self.text_preparer.prepare_text(tweet_text)
+
+        for word in tokens:
+            best_synset = self.disambiguator.disambiguate_word_senses(word, tweet_text)
+
+            # Compute the scores
+            scores_tuple = self.sentitools.get_scores_from_senti_synset(best_synset)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class ItemSentimentAnalyzer(object):
     """
     This analyzes and returns the sentiment scores for a particular item
     """
 
     def __init__(self):
-        DS.IOMService.__init__(self)
+#        DS.IOMService.__init__(self)
 
     def computeSentimentScores(self, record, tokenizer):
         """
@@ -28,32 +192,42 @@ class ItemSentimentAnalyzer(DS.IOMService):
         tokenizer is a tokenizer with a tokenize method. The unit of analysis (e.g., word, ngram, sentence) is determined by the tokenizer passed in
         """
         self.text = record['quoteText']
-        #To allow this to be used with aribitrary inputs
+
+        # To allow this to be used with aribitrary inputs
         try:
             self.quoteID = record['quoteID']
         except:
             try:
                 self.quoteID = record['vin_id']
             except:
-                #Make random ID if none exists
+                # Make random ID if none exists
                 self.quoteID = 'ID' + str(np.random.rand())
-        #Tokenize the text into the appropriate units
+
+        # Tokenize the text into the appropriate units
         self.tokens = tokenizer.tokenize(self.text)
-        #Calc number of tokens in the record
+
+        # Calc number of tokens in the record
         self.numTokens = len(self.tokens)
-        #Calc sentiment scores
+
+        # Calc sentiment scores
         self.pos_score, self.neg_score = senti_classifier.polarity_scores(self.tokens)
-        #Averages are needed because otherwise the score will vary with number of sentences
-        #Average positive sentiment score of the record
+
+        # Averages are needed because otherwise the score will vary with number of sentences
+        # Average positive sentiment score of the record
         self.avgPos = self.pos_score / self.numTokens
-        #Average negative sentiment of the record
+
+        # Average negative sentiment of the record
         self.avgNeg = (self.neg_score / self.numTokens) * -1
-        #Net average sentiment of the record
+
+        # Net average sentiment of the record
         self.netSent = self.avgPos + self.avgNeg
-        #Objectivity score (from chris potts )
+
+        # Objectivity score (from chris potts )
         self.obj_score = 1.0 - self.netSent
-        #Put the results in a dictionary
+
+        # Put the results in a dictionary
         self.scores = dict(quoteID=self.quoteID, avgPos=self.avgPos, avgNeg=self.avgNeg, netSent=self.netSent)
+
         return self.scores
 
     #def makeDict(self):

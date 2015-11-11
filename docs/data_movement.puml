@@ -1,0 +1,13 @@
+@startuml
+
+database "Tweet dbs" {
+TweetText - Hashtags
+}
+
+package "Other Groups" {
+FTP - [Second Component]
+
+[First Component] --> FTP
+}
+
+@enduml

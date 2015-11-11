@@ -39,4 +39,3 @@ class WordFreq(Stats):
         Displays a plot of the frequency distribution of item frequencies
         """
         self.freqDist.plot(self.numToDisplay, cumulative=True)
-	
