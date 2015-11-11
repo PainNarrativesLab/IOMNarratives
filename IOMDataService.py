@@ -1,4 +1,9 @@
 import shelve
+"""
+Currently unused. All mysql queries are now done via IomDataModels.
+May be resurrected to help with shelve and pickles
+"""
+
 
 from USCProjectDAOs import IOMProjectDAO
 
@@ -79,66 +84,66 @@ class IOMService(IOMProjectDAO):
     #	except:
     #		print ('No variable self.to_save set')
 
-    def get_data_from_database(self, query, val):
-        """
-        This executes a parameterized query of the mysql database, stores the results in a list  of dictionaries called self.dbdata.
-
-        @return Also returns dbdata
-
-        @param query A mysql query with %s in place of all substitution variables
-        @type query string
-        @param val A list containing all substition parameters or empty if no substitutions are needed
-        @type val list
-
-        TODO Should have something to check whether a connection exists
-        """
-        self.connect_to_mysql('false')
-        self.query = query
-        self.val = val
-        self.returnAll()
-        self.dbdata = list(self.results)
-
-
-class QueryShell(IOMService):
-    """
-    This is just a shell to easily run queries on the database and get the results as a list of dictionaries
-
-    @return Returns list of dictionaries
-    """
-
-    def __init__(self):
-        IOMService.__init__(self)
-
-    def query(self, query, val):
-        self.get_data_from_database(query, val)
-        return self.dbdata
-
-
-class DHShell(IOMService):
-    """
-    This is a shell for use in public events to avoid cluttering up the page with each step of the query
-    It resets all its values after returning an array of dictionaries and thus need not be reinvoked.
-    Note that These queries are not parameterized
-
-    @return Returns list of dictionaries
-    """
-
-    def __init__(self, query_string):
-        """
-        @param query_string The query string
-        @type string
-        """
-        IOMService.__init__(self)
-        self.q(query_string)
-
-    def q(self, query_string):
-        # Get rid of previous queries
-        #		self.results = []
-        #		self.dbdata = None
-        #These queries are not parameterized
-        val = []
-        self.get_data_from_database(query_string, val)
-        return self.dbdata
+#     def get_data_from_database(self, query, val):
+#         """
+#         This executes a parameterized query of the mysql database, stores the results in a list  of dictionaries called self.dbdata.
+#
+#         @return Also returns dbdata
+#
+#         @param query A mysql query with %s in place of all substitution variables
+#         @type query string
+#         @param val A list containing all substition parameters or empty if no substitutions are needed
+#         @type val list
+#
+#         TODO Should have something to check whether a connection exists
+#         """
+#         self.connect_to_mysql('false')
+#         self.query = query
+#         self.val = val
+#         self.returnAll()
+#         self.dbdata = list(self.results)
+#
+#
+# class QueryShell(IOMService):
+#     """
+#     This is just a shell to easily run queries on the database and get the results as a list of dictionaries
+#
+#     @return Returns list of dictionaries
+#     """
+#
+#     def __init__(self):
+#         IOMService.__init__(self)
+#
+#     def query(self, query, val):
+#         self.get_data_from_database(query, val)
+#         return self.dbdata
+#
+#
+# class DHShell(IOMService):
+#     """
+#     This is a shell for use in public events to avoid cluttering up the page with each step of the query
+#     It resets all its values after returning an array of dictionaries and thus need not be reinvoked.
+#     Note that These queries are not parameterized
+#
+#     @return Returns list of dictionaries
+#     """
+#
+#     def __init__(self, query_string):
+#         """
+#         @param query_string The query string
+#         @type string
+#         """
+#         IOMService.__init__(self)
+#         self.q(query_string)
+#
+#     def q(self, query_string):
+#         # Get rid of previous queries
+#         #		self.results = []
+#         #		self.dbdata = None
+#         #These queries are not parameterized
+#         val = []
+#         self.get_data_from_database(query_string, val)
+#         return self.dbdata
 
 
 class ShelveDataHandler(IOMService):
