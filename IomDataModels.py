@@ -36,9 +36,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Base class that maintains the catalog of tables and classes in db
-Base = declarative_base()
-
 
 class Connection(object):
     """
@@ -97,7 +94,6 @@ class MySqlConnection(Connection):
 
     def __init__(self, credential_file):
         self._driver = '+mysqlconnector'
-        # super(__class__, self).__init__(credential_file)
         super().__init__(credential_file)
 
     def _make_engine(self):
@@ -163,6 +159,8 @@ class DAO(BaseDAO):
 #######################################
 # Database models                     #
 #######################################
+# Base class that maintains the catalog of tables and classes in db
+Base = declarative_base()
 
 condition_testimony_table = Table('iom_conditionsXtestimony', Base.metadata,
                                   Column('quoteID', Integer, ForeignKey('iom_testimony.quoteID')),
@@ -203,7 +201,6 @@ class Testimony(Base):
         [self.condition_names.append(c.conditionName) for c in self.conditions]
         self.condition_names = tuple(set(self.condition_names))
         return self.condition_names
-
 
 
 class Condition(Base):
@@ -247,54 +244,119 @@ class Alias(Base):
     condition = relationship('Condition', backref='iom_conditionAliases')
 
 
-class Provider(Base):
+class Person(object):
+    """
+    Parent class for Providers, Respondents, and Patients which contains
+    methods for retrieving data for those objects to inherit
+
+    Properties:
+        concatenated_text: String of all vignettes attributed to the
+            person. Only available after get_concatenated_responses called
+        quote_ids: Tuple of all ids of vignettes attributed to the person. Only
+            available after get_vignette_ids called
+        condition_ids: Tuple of all condition ids attributed to the person. Only
+            available after get_condition_ids called.
+        condition_names: Tuple of string names of conditions attributed to the person. Only
+            available after get_condition_names called.
+
+    TODO: Consider adding __get__ method which checks if the relevant property has been set
+        and then calls the relevant method if not.
+    """
+
+    def get_concatenated_responses(self):
+        """
+        Concatenates all the vignette text for the respondent
+        and returns it.
+        """
+        self.concatenated_text = ""
+
+        def addText(text):
+            self.concatenated_text += text
+
+        [addText(t.quoteText) for t in self.vignettes]
+        return self.concatenated_text
+
+    def get_vignette_ids(self):
+        """
+        Returns a tuple of the quote ids belonging to the respondent
+        """
+        self.quote_ids = []
+        [self.quote_ids.append(t.quoteID) for t in self.vignettes]
+        return tuple(self.quote_ids)
+
+    def get_condition_ids(self):
+        """
+        Returns a tuple of unique condition ids identified for
+        the person
+        """
+        self.condition_ids = []
+
+        for t in self.vignettes:
+            # iterate through each condition associated with each vignette
+            [self.condition_ids.append(ci) for ci in t.get_condition_ids()]
+
+        self.condition_ids = tuple(set(self.condition_ids))
+        return self.condition_ids
+
+    def get_condition_names(self):
+        """
+        Returns a tuple of any condition names identified for
+        the vignette
+        """
+        self.condition_names = []
+
+        for t in self.vignettes:
+            # iterate through each condition associated with each vignette
+            [self.condition_names.append(cn) for cn in t.get_condition_names()]
+
+        self.condition_names = tuple(set(self.condition_names))
+
+        return self.condition_names
+
+
+class Provider(Base, Person):
     """
     Properties:
         respondentID: Integer respondent id
-        concatenated_text: All vignette text for the person
     """
     __tablename__ = "iom_providers"
     respondentID = Column(Integer, ForeignKey('iom_testimony.respondentID'), primary_key=True)
     # Relation to testimony table
     vignettes = relationship('Testimony', backref='iom_testimony', uselist=True)
 
-    def get_concatenated_responses(self):
-        """
-        Concatenates all the vignette text for the provider
-        and returns it.
-        """
-        self.concatenated_text = ""
-
-        def addText(text):
-            self.concatenated_text += text
-
-        [addText(t.quoteText) for t in self.vignettes]
-        return self.concatenated_text
+    def __init__(self):
+        Base.__init__(self)
+        Person.__init__(self)
 
 
-class Patient(Base):
+class Patient(Base, Person):
     """
     Properties:
         respondentID: Integer respondent id
-        concatenated_text: All vignette text for the person
     """
     __tablename__ = "iom_patients"
     respondentID = Column(Integer, ForeignKey('iom_testimony.respondentID'), primary_key=True)
     # Relation to testimony table
     vignettes = relationship(Testimony, uselist=True)
 
-    def get_concatenated_responses(self):
-        """
-        Concatenates all the vignette text for the provider
-        and returns it.
-        """
-        self.concatenated_text = ""
+    def __init__(self):
+        Base.__init__(self)
+        Person.__init__(self)
 
-        def addText(text):
-            self.concatenated_text += text
 
-        [addText(t.quoteText) for t in self.vignettes]
-        return self.concatenated_text
+class Respondent(Base, Person):
+    """
+    Properties:
+        respondentID: Integer respondent id
+    """
+    __tablename__ = "iom_respondents"
+    id = Column(Integer, ForeignKey('iom_testimony.respondentID'), primary_key=True)
+    # Relation to testimony table
+    vignettes = relationship('Testimony', uselist=True)
+
+    def __init__(self):
+        Base.__init__(self)
+        Person.__init__(self)
 
 
 if __name__ == '__main__':
