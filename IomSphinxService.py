@@ -60,7 +60,7 @@ class SphinxSearch(SphinxClient, IOMService):
         self.SPH_SORT_EXPR = 5
 
         # lists to hold results
-        self.resultIDs = []  # this contains the quoteID/RMIndex id's (depending on what's searched) in which the search string occurs
+        self.resultIDs = []  # this contains the quote_id/RMIndex id's (depending on what's searched) in which the search string occurs
         self.search_results = []
         self.result_content = []
         self.excerpts = []
@@ -82,28 +82,28 @@ class SphinxSearch(SphinxClient, IOMService):
             if which_preset == 'iomAll' or which_preset == 'iomMain':
                 self.searchDB = 'iom_data'
                 self.table_to_search = 'testimony'
-                self.table_search_prim_key = 'quoteID'
-                self.table_search_content = 'quoteText'
+                self.table_search_prim_key = 'quote_id'
+                self.table_search_content = 'quote_text'
                 self.table_to_insert_masked = 'masked_main'
-                self.table_masked_prim_key = 'quoteID'
-                self.table_masked_content = 'quoteText'
+                self.table_masked_prim_key = 'quote_id'
+                self.table_masked_content = 'quote_text'
                 self.excerpt_index = 'iom_data_idx'
                 self.index_for_search = 'iom_data_idx'
-                self.sortOn = 'quoteText'
+                self.sortOn = 'quote_text'
                 print('Ready to search IOM testimony ')
 
             # Searching patient testimony
             elif which_preset == 'iomPatients' or which_preset == 'onQuotes':
                 self.searchDB = 'iom_data'
                 self.table_to_search = 'testimony_patients'
-                self.table_search_prim_key = 'quoteID'
-                self.table_search_content = 'quoteText'
+                self.table_search_prim_key = 'quote_id'
+                self.table_search_content = 'quote_text'
                 self.table_to_insert_masked = 'masked_patients'
-                self.table_masked_prim_key = 'quoteID'
-                self.table_masked_content = 'quoteText'
+                self.table_masked_prim_key = 'quote_id'
+                self.table_masked_content = 'quote_text'
                 self.excerpt_index = 'test_patient_idx'
                 self.index_for_search = 'test_patient_idx'
-                self.sortOn = 'quoteText'
+                self.sortOn = 'quote_text'
                 print('Ready to search IOM testimony_patients ')
             # old database
             elif which_preset == 'onMain':
@@ -113,7 +113,7 @@ class SphinxSearch(SphinxClient, IOMService):
                 self.table_search_content = 'response'
                 self.table_to_insert_masked = 'masked_main'
                 self.table_masked_prim_key = 'RM_INDEX'
-                self.table_masked_content = 'quoteText'
+                self.table_masked_content = 'quote_text'
                 self.excerpt_index = 'main_idx'
                 self.index_for_search = 'main_idx'
                 self.sortOn = 'RM_INDEX'
@@ -180,7 +180,7 @@ class SphinxSearch(SphinxClient, IOMService):
         try:
             #self.sel = mysql_select_db(self.searchDB) or die(mysql_error());
             for idnum in self.resultIDs:
-                self.query = "SELECT quoteID, quoteText FROM testimony_all WHERE quoteID = %s"
+                self.query = "SELECT quote_id, quote_text FROM testimony_all WHERE quote_id = %s"
                 #self.query = "SELECT * FROM %%s WHERE %%s = %idnum" % (self.table_to_search, self.table_search_prim_key)
                 self.val = [idnum]
                 self.returnAll()
@@ -201,8 +201,8 @@ class SphinxSearch(SphinxClient, IOMService):
                                     'around': 5000,
                                     'limit': 1000000}
             for r in self.result_content:
-                ex = self.BuildExcerpts([r['quoteText']], self.excerpt_index, self.search_string, self.excerpt_options)
-                d = {'quoteID': r['quoteID'], 'quoteText': ex[0]}
+                ex = self.BuildExcerpts([r['quote_text']], self.excerpt_index, self.search_string, self.excerpt_options)
+                d = {'quote_id': r['quote_id'], 'quote_text': ex[0]}
                 self.excerpts.append(d)
         except:
             self.sphinxErrorHandler()
@@ -214,14 +214,14 @@ class SphinxSearch(SphinxClient, IOMService):
 
         @type term_to_masks string
         @param term_to_masks A term or set of terms using sphinx extended search syntax
-        @return: Returns a list of dictionaries with quoteID and quoteText keys
+        @return: Returns a list of dictionaries with quote_id and quote_text keys
         @rtype: list
         """
         self.search(terms_to_mask)
         self.getContent()
         self.buildExcerpts()
         try:
-            self.excerpts = [{'quoteID': e['quoteID'], 'quoteText': re.sub(r'~.+~', '', e['quoteText'])} for e in
+            self.excerpts = [{'quote_id': e['quote_id'], 'quote_text': re.sub(r'~.+~', '', e['quote_text'])} for e in
                              self.excerpts]
         except:
             self.sphinxErrorHandler()
@@ -244,11 +244,11 @@ class SphinxSearch(SphinxClient, IOMService):
                 self.val = [k, v]
                 self.executeQuery()
 
-            #		/* This is a serious hack. The excerpt array doesn't hold the quoteID. So I'm relying on the
+            #		/* This is a serious hack. The excerpt array doesn't hold the quote_id. So I'm relying on the
             #		array having the same order as the results array and stepping through it with the update query.
         i = 0;
         for idnum in self.resultIDs:
-            self.query = "UPDATE quotes_masked SET quoteID = %s WHERE questionNumber = %s"
+            self.query = "UPDATE quotes_masked SET quote_id = %s WHERE question_number = %s"
             self.val = [idnum, i]
             self.executeQuery
             i = i + 1

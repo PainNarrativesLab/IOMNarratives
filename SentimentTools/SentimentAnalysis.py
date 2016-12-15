@@ -4,23 +4,18 @@ This contains classes used for analyzing the sentiments of input texts
 
 import re
 import pprint
-
-import nltk
+import shelve
 
 # import IOMDataService as DS
 
 # from TextFiltration import Sentences, Words, Lemmatized, Bigrams, Trigrams
 import numpy as np
 
-#from senti_classifier import senti_classifier
+from senti_classifier import senti_classifier
 
-
-from nltk.corpus import sentiwordnet as swn
 import nltk
+from nltk.corpus import sentiwordnet as swn
 from nltk.corpus import wordnet as wn
-
-
-
 from nltk.corpus import stopwords
 from nltk.tokenize import wordpunct_tokenize
 
@@ -165,37 +160,25 @@ class ComputeSentiments(object):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 class ItemSentimentAnalyzer(object):
     """
     This analyzes and returns the sentiment scores for a particular item
     """
 
     def __init__(self):
+        pass
 #        DS.IOMService.__init__(self)
 
     def computeSentimentScores(self, record, tokenizer):
         """
-        record is a dict which must have record['quoteText']. It normally should have record['quoteID'] or record['vin_id']
+        record is a dict which must have record['quote_text']. It normally should have record['quote_id'] or record['vin_id']
         tokenizer is a tokenizer with a tokenize method. The unit of analysis (e.g., word, ngram, sentence) is determined by the tokenizer passed in
         """
-        self.text = record['quoteText']
+        self.text = record['quote_text']
 
-        # To allow this to be used with aribitrary inputs
+        # To allow this to be used with arbitrary inputs
         try:
-            self.quoteID = record['quoteID']
+            self.quoteID = record['quote_id']
         except:
             try:
                 self.quoteID = record['vin_id']
@@ -233,15 +216,16 @@ class ItemSentimentAnalyzer(object):
     #def makeDict(self):
     #	"""
     #	Makes a dictionary for the result
-    #	Keys: quoteID, avgPos, avgNeg, netSent
+    #	Keys: quote_id, avgPos, avgNeg, netSent
     #	"""
-    #	self.result_dict = dict(quoteID=self.quoteID, avgPos=self.avgPos, avgNeg=self.avgNeg, netSent=self.netSent)
+    #	self.result_dict = dict(quote_id=self.quote_id, avgPos=self.avgPos, avgNeg=self.avgNeg, netSent=self.netSent)
     #	return self.result_dict
 
     def saveSentiments(self, filepath):
         """
         Saves the results
-        filepath is the path to the shelve file where the data is / is to be stored
+        Args:
+            filepath: the path to the shelve file where the data is / is to be stored
         """
         #self.makeDict()
         self.to_save = self.scores
@@ -255,8 +239,9 @@ class GroupSentiments:
 
     def __init__(self, data, groupname):
         """
-        data is a list of dictionaries that have been prepared by ItemSentiments to be saved
-        groupname is the name that the result will be stored with/ or the name to retrieve
+        Args:
+            data: a list of dictionaries that have been prepared by ItemSentiments to be saved
+            groupname: the name that the result will be stored with/ or the name to retrieve
         """
         self.name = groupname
         #self.datafile = datafile
@@ -265,7 +250,7 @@ class GroupSentiments:
         self.avgNeg = []
         self.netSent = []
         for d in data:
-            self.quoteIDs.append(d['quoteID'])
+            self.quoteIDs.append(d['quote_id'])
             self.avgPos.append(d['avgPos'])
             self.avgNeg.append(d['avgNeg'])
             self.netSent.append(d['netSent'])

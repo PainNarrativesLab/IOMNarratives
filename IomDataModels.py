@@ -163,8 +163,8 @@ class DAO(BaseDAO):
 Base = declarative_base()
 
 condition_testimony_table = Table('iom_conditionsXtestimony', Base.metadata,
-                                  Column('quoteID', Integer, ForeignKey('iom_testimony.quoteID')),
-                                  Column('conditionID', Integer, ForeignKey('iom_conditions.conditionID'))
+                                  Column('quote_id', Integer, ForeignKey('iom_testimony.quote_id')),
+                                  Column('condition_id', Integer, ForeignKey('iom_conditions.condition_id'))
                                   )
 
 
@@ -175,10 +175,10 @@ class Testimony(Base):
         condition_names: Tuple of condition names identified in vignette
     """
     __tablename__ = "iom_testimony"
-    quoteID = Column(Integer, primary_key=True)
-    respondentID = Column(Integer)
-    questionNumber = Column(Integer)
-    quoteText = Column(String)
+    quote_id = Column(Integer, primary_key=True)
+    respondent_id = Column(Integer)
+    question_number = Column(Integer)
+    quote_text = Column(String)
     # many to many Testimony<->Condition
     conditions = relationship('Condition', secondary=condition_testimony_table, backref="iom_testimony")
 
@@ -202,6 +202,14 @@ class Testimony(Base):
         self.condition_names = tuple(set(self.condition_names))
         return self.condition_names
 
+    def get_id(self):
+        """
+        Getter for quote_id
+        Returns:
+            Integer representation of the id of the vignette
+        """
+        return self.quote_id
+
 
 class Condition(Base):
     """
@@ -210,10 +218,10 @@ class Condition(Base):
         respondent_ids: List of associated respondent ids
     """
     __tablename__ = 'iom_conditions'
-    conditionID = Column(Integer, primary_key=True)
-    conditionName = Column(String)
+    condition_id = Column(Integer, primary_key=True)
+    condition_name = Column(String)
     # many to many Condition<->Alias
-    aliases = relationship('Alias', backref='iom_conditions')
+    #  aliases = relationship('Alias', backref='iom_conditions')
     # many to many Testimony<->Condition
     testimony = relationship('Testimony', secondary=condition_testimony_table, backref="iom_conditions")
 
@@ -222,7 +230,7 @@ class Condition(Base):
         Returns a tuple of quote ids wherein the condition is mentioned
         """
         self.quote_ids = []
-        [self.quote_ids.append(t.quoteID) for t in self.testimony]
+        [self.quote_ids.append(t.quote_id) for t in self.testimony]
         return tuple(self.quote_ids)
 
     def get_respondent_ids(self):
@@ -231,17 +239,23 @@ class Condition(Base):
         Also sets attribute respondent_ids
         """
         self.respondent_ids = []
-        [self.respondent_ids.append(t.respondentID) for t in self.testimony]
+        [self.respondent_ids.append(t.respondent_id) for t in self.testimony]
         self.respondent_ids = tuple(set(self.respondent_ids))
         return self.respondent_ids
 
-
-class Alias(Base):
-    __tablename__ = 'iom_conditionAliases'
-    aliasID = Column(Integer, primary_key=True)
-    conditionAlias = Column(String)
-    conditionID = Column(Integer, ForeignKey('iom_conditions.conditionID'))
-    condition = relationship('Condition', backref='iom_conditionAliases')
+#
+# class Alias(Base):
+#     __tablename__ = 'iom_conditionAliases'
+#     aliasID = Column(Integer, primary_key=True)
+#     conditionAlias = Column(String)
+#     conditionID = Column(Integer, ForeignKey('iom_conditions.condition_id'))
+#     condition = relationship('Condition', backref='iom_conditionAliases')
+#
+#     def get_alias_text(self):
+#         return self.conditionAlias
+#
+#     def get_condition(self):
+#         return self.condition
 
 
 class Person(object):
@@ -263,6 +277,9 @@ class Person(object):
         and then calls the relevant method if not.
     """
 
+    # def __init__(self):
+
+
     def get_concatenated_responses(self):
         """
         Concatenates all the vignette text for the respondent
@@ -271,17 +288,31 @@ class Person(object):
         self.concatenated_text = ""
 
         def addText(text):
-            self.concatenated_text += text
+            self.concatenated_text += '\n ' + text
 
-        [addText(t.quoteText) for t in self.vignettes]
+        [addText(t.quote_text) for t in self.vignettes]
         return self.concatenated_text
+
+    def get_concatenated_responses_for_html(self):
+        """
+        Concatenates all the vignette text for the respondent
+        and returns it. Same as regular except adds html tags for line breaks
+        """
+        self.concatenated_text_html = ""
+
+        def addText(text, question_number):
+            self.concatenated_text_html += '<p>[Q%s] %s </p>' % (question_number, text)
+
+        [addText(t.quote_text, t.question_number) for t in self.vignettes]
+
+        return self.concatenated_text_html
 
     def get_vignette_ids(self):
         """
         Returns a tuple of the quote ids belonging to the respondent
         """
         self.quote_ids = []
-        [self.quote_ids.append(t.quoteID) for t in self.vignettes]
+        [self.quote_ids.append(t.quote_id) for t in self.vignettes]
         return tuple(self.quote_ids)
 
     def get_condition_ids(self):
@@ -301,7 +332,7 @@ class Person(object):
     def get_condition_names(self):
         """
         Returns a tuple of any condition names identified for
-        the vignette
+        the person
         """
         self.condition_names = []
 
@@ -313,50 +344,70 @@ class Person(object):
 
         return self.condition_names
 
+    def get_id(self):
+        """
+        Getter for person's respondent id
+        :return: int
+        """
+        if hasattr(self, 'respondent_id'):
+            return self.respondentID
+        elif hasattr(self, 'id'):
+            return self.id
+        else:
+            raise Exception
+
 
 class Provider(Base, Person):
     """
     Properties:
-        respondentID: Integer respondent id
+        respondent_id: Integer respondent id
     """
     __tablename__ = "iom_providers"
-    respondentID = Column(Integer, ForeignKey('iom_testimony.respondentID'), primary_key=True)
+    respondent_id = Column(Integer, ForeignKey('iom_testimony.respondent_id'), primary_key=True)
     # Relation to testimony table
     vignettes = relationship('Testimony', backref='iom_testimony', uselist=True)
 
     def __init__(self):
         Base.__init__(self)
         Person.__init__(self)
+        # alias for respondent id
+        self.id = self.respondent_id
 
 
 class Patient(Base, Person):
     """
     Properties:
-        respondentID: Integer respondent id
+        respondent_id: Integer respondent id
     """
     __tablename__ = "iom_patients"
-    respondentID = Column(Integer, ForeignKey('iom_testimony.respondentID'), primary_key=True)
+    respondent_id = Column(Integer, ForeignKey('iom_testimony.respondent_id'), primary_key=True)
     # Relation to testimony table
     vignettes = relationship(Testimony, uselist=True)
 
     def __init__(self):
         Base.__init__(self)
         Person.__init__(self)
+        # alias for respondent id
+        self.id = self.respondent_id
 
 
 class Respondent(Base, Person):
     """
+    Generic respondent
     Properties:
-        respondentID: Integer respondent id
+        id: Integer respondent id
     """
     __tablename__ = "iom_respondents"
-    id = Column(Integer, ForeignKey('iom_testimony.respondentID'), primary_key=True)
+    id = Column(Integer, ForeignKey('iom_testimony.respondent_id'), primary_key=True)
     # Relation to testimony table
     vignettes = relationship('Testimony', uselist=True)
 
     def __init__(self):
         Base.__init__(self)
         Person.__init__(self)
+        # alias for respondent id so matches others
+        self.respondent_id = self.id
+
 
 
 if __name__ == '__main__':

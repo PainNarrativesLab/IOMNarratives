@@ -45,7 +45,7 @@ class ConditionsService(IOMService):
         Get all conditions
         """
         try:
-            query = "SELECT conditionName, conditionID FROM conditions"
+            query = "SELECT condition_name, condition_id FROM conditions"
             val = []
             self.get_data_from_database(query, val)
             self.conditions = self.dbdata
@@ -59,7 +59,7 @@ class ConditionsService(IOMService):
         Get all aliases
         """
         try:
-            query = "SELECT aliasID, conditionAlias, conditionID FROM conditionAliases"
+            query = "SELECT aliasID, conditionAlias, condition_id FROM conditionAliases"
             val = []
             self.get_data_from_database(query, val)
             self.aliases = self.dbdata
@@ -73,7 +73,7 @@ class ConditionsService(IOMService):
         Get associations between conditions as they occur in all testimonials
         """
         try:
-            query = "SELECT x.quoteID, x.conditionID, c.conditionName FROM conditionsXtestimonials x INNER JOIN conditions c USING(conditionID)"
+            query = "SELECT x.quote_id, x.condition_id, c.condition_name FROM conditionsXtestimonials x INNER JOIN conditions c USING(condition_id)"
             val = []
             self.get_data_from_database(query, val)
             self.mainxcond = self.dbdata
@@ -87,10 +87,10 @@ class ConditionsService(IOMService):
         Loads all respondents and all conditions
         """
         try:
-            query = """SELECT DISTINCT t.respondentID, cxt.conditionID, c.conditionName
+            query = """SELECT DISTINCT t.respondent_id, cxt.condition_id, c.condition_name
 			FROM testimony_all t
-			INNER JOIN conditionsXtestimonials cxt ON t.quoteID = cxt.quoteID
-			INNER JOIN conditions c ON c.conditionID = cxt.conditionID;"""
+			INNER JOIN conditionsXtestimonials cxt ON t.quote_id = cxt.quote_id
+			INNER JOIN conditions c ON c.condition_id = cxt.condition_id;"""
             self.get_data_from_database(query, [])
             self.respondentsXconditions = self.dbdata
         except LoadException:
@@ -102,13 +102,13 @@ class ConditionsService(IOMService):
 
     def all_assoc_for_patients(self):
         """
-        Get associations between respondentID and conditions where respondents are patients
+        Get associations between respondent_id and conditions where respondents are patients
         """
         try:
-            query = """SELECT DISTINCT p.respondentID, cxt.conditionID, c.conditionName
-			FROM conditionsXpatients cxt INNER JOIN testimony_all t ON cxt.quoteID = t.quoteID
-			INNER JOIN classify_patients p ON t.respondentID = p.respondentID
-			INNER JOIN conditions c ON c.conditionID = cxt.conditionID"""
+            query = """SELECT DISTINCT p.respondent_id, cxt.condition_id, c.condition_name
+			FROM conditionsXpatients cxt INNER JOIN testimony_all t ON cxt.quote_id = t.quote_id
+			INNER JOIN classify_patients p ON t.respondent_id = p.respondent_id
+			INNER JOIN conditions c ON c.condition_id = cxt.condition_id"""
             self.get_data_from_database(query, [])
             self.patientsXconditions = self.dbdata
         except Exception as e:
@@ -118,12 +118,12 @@ class ConditionsService(IOMService):
 
     def all_assoc_for_quotes(self):
         """
-        Get associations between quoteID and condition for all quotes
+        Get associations between quote_id and condition for all quotes
         """
         try:
-            query = """SELECT x.quoteID, x.conditionID, c.conditionName
+            query = """SELECT x.quote_id, x.condition_id, c.condition_name
 			FROM conditionsXtestimonials x
-			INNER JOIN conditions c ON x.conditionID = c.conditionID"""
+			INNER JOIN conditions c ON x.condition_id = c.condition_id"""
             self.get_data_from_database(query, [])
             self.quotesXconditions = self.dbdata
         except Exception as e:
@@ -133,14 +133,14 @@ class ConditionsService(IOMService):
 
     def all_assoc_for_patient_quotes(self):
         """
-        Get associations between quoteID and conditions for quotes from presumed patients
+        Get associations between quote_id and conditions for quotes from presumed patients
         """
         try:
-            query = """SELECT DISTINCT t.quoteID, cxt.conditionID, c.conditionName
+            query = """SELECT DISTINCT t.quote_id, cxt.condition_id, c.condition_name
 			FROM conditionsXpatients cxt
-			INNER JOIN testimony_all t ON cxt.quoteID = t.quoteID
-			INNER JOIN classify_patients p ON t.respondentID = p.respondentID
-			INNER JOIN conditions c ON c.conditionID = cxt.conditionID;"""
+			INNER JOIN testimony_all t ON cxt.quote_id = t.quote_id
+			INNER JOIN classify_patients p ON t.respondent_id = p.respondent_id
+			INNER JOIN conditions c ON c.condition_id = cxt.condition_id;"""
             self.get_data_from_database(query, [])
             patient_quotesXconditions = self.dbdata
         except Exception as e:
@@ -161,11 +161,11 @@ class ConditionsService(IOMService):
         @type identifier integer
         """
         #Get the conditions associated with respondent
-        query = self.query_string % ('conditionID', 'conditionsXrespondents', 'respondentID')
+        query = self.query_string % ('condition_id', 'conditionsXrespondents', 'respondent_id')
         self.get_data_from_database(query, [identifier])
         conditionIDs = self.dbdata
         #Get the respondent's quoteIDs
-        query = self.query_string % ('quoteID', 'testimony', 'respondentID')
+        query = self.query_string % ('quote_id', 'testimony', 'respondent_id')
         self.get_data_from_database(query, [identifier])
         quoteIDs = self.dbdata
 
@@ -179,15 +179,15 @@ class ConditionsService(IOMService):
         @type identifier integer
         """
         #Get the respondents associated with the condition
-        query = """SELECT DISTINCT t.respondentID
+        query = """SELECT DISTINCT t.respondent_id
 		FROM testimony t
-		INNER JOIN conditionsXtestimony cxt ON t.quoteID = cxt.quoteID
-		WHERE cxt.conditionID = %s"""
+		INNER JOIN conditionsXtestimony cxt ON t.quote_id = cxt.quote_id
+		WHERE cxt.condition_id = %s"""
         self.get_data_from_database(query, [identifier])
         respondentIDs = self.dbdata
 
         #Get the quoteIDs for testimonials in which the condition is mentioned
-        query = self.query_string % ('quoteID', 'conditionsXtestimony', 'conditionID')
+        query = self.query_string % ('quote_id', 'conditionsXtestimony', 'condition_id')
         self.get_data_from_database(query, [identifier])
         quoteIDs = self.dbdata
 
@@ -202,17 +202,17 @@ class ConditionsService(IOMService):
         @type identifier int
         """
         #Get the patients associated with the condition
-        query = """SELECT cp.respondentID
-		FROM conditionsXrespondents cxr INNER JOIN patients cp ON cxr.respondentID = cp.respondentID
-		WHERE conditionID = %s"""
+        query = """SELECT cp.respondent_id
+		FROM conditionsXrespondents cxr INNER JOIN patients cp ON cxr.respondent_id = cp.respondent_id
+		WHERE condition_id = %s"""
         self.get_data_from_database(query, [identifier])
         respondentIDs = self.dbdata
 
         #Get the quoteIDs for testimonials in which the condition is mentioned limited to patients
-        query = """SELECT DISTINCT t.quoteID
-		FROM conditionsXtestimony cxt INNER JOIN testimony t ON cxt.quoteID = t.quoteID
-		INNER JOIN patients p ON t.respondentID = p.respondentID
-		WHERE conditionID = %s"""
+        query = """SELECT DISTINCT t.quote_id
+		FROM conditionsXtestimony cxt INNER JOIN testimony t ON cxt.quote_id = t.quote_id
+		INNER JOIN patients p ON t.respondent_id = p.respondent_id
+		WHERE condition_id = %s"""
         self.get_data_from_database(query, [identifier])
         quoteIDs = self.dbdata
 
@@ -221,30 +221,30 @@ class ConditionsService(IOMService):
 
     def for_quote(self, identifier):
         """
-        Given a quoteID, this returns dictionary with list of unique condition ids mentioned in it,
+        Given a quote_id, this returns dictionary with list of unique condition ids mentioned in it,
         a list of conditionNames, and a list containing the respondent id as the only item
         @param identfier Quote ID to find associations for
         @type identifier int
         """
         #Get conditionIDs
-        #query = "SELECT DISTINCT conditionID FROM conditionsXtestimony WHERE quoteID = %s"
-        #query = "SELECT DISTINCT conditionID, conditionName FROM conditionsXtestimony NATURAL JOIN conditions WHERE quoteID = %s"
-        query = "SELECT DISTINCT conditionID, conditionName FROM conditionsXtestimonials INNER JOIN conditions USING(conditionID) WHERE quoteID = %s"
+        #query = "SELECT DISTINCT condition_id FROM conditionsXtestimony WHERE quote_id = %s"
+        #query = "SELECT DISTINCT condition_id, condition_name FROM conditionsXtestimony NATURAL JOIN conditions WHERE quote_id = %s"
+        query = "SELECT DISTINCT condition_id, condition_name FROM conditionsXtestimonials INNER JOIN conditions USING(condition_id) WHERE quote_id = %s"
         self.get_data_from_database(query, [identifier])
         conditionIDs = []
         conditionNames = []
-        [conditionIDs.append(i['conditionID']) for i in self.dbdata]
-        [conditionNames.append(i['conditionName']) for i in self.dbdata]
+        [conditionIDs.append(i['condition_id']) for i in self.dbdata]
+        [conditionNames.append(i['condition_name']) for i in self.dbdata]
 
         #Get quote's author
-        #query = """SELECT respondentID FROM testimony WHERE quoteID = %s"""
-        query = """SELECT respondentID FROM testimony_all WHERE quoteID = %s"""
+        #query = """SELECT respondent_id FROM testimony WHERE quote_id = %s"""
+        query = """SELECT respondent_id FROM testimony_all WHERE quote_id = %s"""
 
         self.get_data_from_database(query, [identifier])
         quoteIDs = self.dbdata
 
         #Get condition names
-        query = "SELECT DISTINCT conditionName FROM conditions WHERE conditionID = %s"
+        query = "SELECT DISTINCT condition_name FROM conditions WHERE condition_id = %s"
         self.get_data_from_database
         d = {'conditionIDs': conditionIDs, 'conditionNames': conditionNames, 'respondentIDs': quoteIDs[0]}
         return d
@@ -263,62 +263,62 @@ class ConditionsService(IOMService):
         self.testimonial_vectors = []
         self.patient_vectors = []
         for c in self.conditions:
-            condition = str(c['conditionName'])
+            condition = str(c['condition_name'])
             #Make vectors by respondent (undifferentiated)
             try:
                 rtemp = []
-                [rtemp.append(rxc['respondentID']) for rxc in self.respondentsXconditions if
-                 str(rxc['conditionName']) == condition]
-                self.respondent_vectors.append({'conditionName': c['conditionName'], 'edges': list(set(rtemp))})
+                [rtemp.append(rxc['respondent_id']) for rxc in self.respondentsXconditions if
+                 str(rxc['condition_name']) == condition]
+                self.respondent_vectors.append({'condition_name': c['condition_name'], 'edges': list(set(rtemp))})
             except Exception as e:
                 print("Error making respondent vectors : %s" % e)
             #Make vectors by testimonial
             try:
                 qtemp = []
-                [qtemp.append(qxc['quoteID']) for qxc in self.quotesXconditions if
-                 str(qxc['conditionName']) == condition]
-                self.testimonial_vectors.append({'conditionName': c['conditionName'], 'edges': list(set(qtemp))})
+                [qtemp.append(qxc['quote_id']) for qxc in self.quotesXconditions if
+                 str(qxc['condition_name']) == condition]
+                self.testimonial_vectors.append({'condition_name': c['condition_name'], 'edges': list(set(qtemp))})
             except Exception as e:
                 print("Error making testimonial vectors: %s" % e)
             #Make vectors by patients
             try:
                 ptemp = []
-                [ptemp.append(pxc['respondentID']) for pxc in self.patientsXconditions if
-                 str(pxc['conditionName']) == condition]
-                self.patient_vectors.append({'conditionName': c['conditionName'], 'edges': list(set(ptemp))})
+                [ptemp.append(pxc['respondent_id']) for pxc in self.patientsXconditions if
+                 str(pxc['condition_name']) == condition]
+                self.patient_vectors.append({'condition_name': c['condition_name'], 'edges': list(set(ptemp))})
             except Exception as e:
                 print("Error making patient vectors : %s " % e)
                 #
                 #self.quote_vectors = []
                 #self.respondent_vectors =[]
                 #for c in self.conditions:
-                #	t  = self.for_condition(c['conditionID'])
+                #	t  = self.for_condition(c['condition_id'])
                 #	qids = t['quoteIDs']
                 #	qtemp = []
-                #	[qtemp.append(g['quoteID']) for g in qids]
+                #	[qtemp.append(g['quote_id']) for g in qids]
                 #	qtemp = list(set(qtemp))
-                #	self.quote_vectors.append({'conditionID' : c['conditionID'], 'conditionName' : c['conditionName'], 'edge' : qtemp })
+                #	self.quote_vectors.append({'condition_id' : c['condition_id'], 'condition_name' : c['condition_name'], 'edge' : qtemp })
                 #	#Repeat for respondents
                 #	rids = t['respondentIDs']
                 #	rtemp = []
-                #	[rtemp.append(g['respondentID']) for g in rids]
+                #	[rtemp.append(g['respondent_id']) for g in rids]
                 #	rtemp = list(set(rtemp))
-                #	self.respondent_vectors.append({'conditionID' : c['conditionID'], 'conditionName' : c['conditionName'], 'edge' : rtemp })
+                #	self.respondent_vectors.append({'condition_id' : c['condition_id'], 'condition_name' : c['condition_name'], 'edge' : rtemp })
                 #
                 #	#Now do for patients
                 #	#All quotes
-                #	#t  = self.for_condition_patients(c['conditionID'])
+                #	#t  = self.for_condition_patients(c['condition_id'])
                 #	#qids = t['quoteIDs']
                 #	#qtemp = []
-                #	#[qtemp.append(g['quoteID']) for g in qids]
+                #	#[qtemp.append(g['quote_id']) for g in qids]
                 #	#qtemp = list(set(qtemp))
-                #	#self.patient_quote_vectors.append({'conditionID' : c['conditionID'], 'conditionName' : c['conditionName'], 'edge' : qtemp })
+                #	#self.patient_quote_vectors.append({'condition_id' : c['condition_id'], 'condition_name' : c['condition_name'], 'edge' : qtemp })
                 #	#Repeat for respondents
                 #	rids = t['respondentIDs']
                 #	rtemp = []
-                #	[rtemp.append(g['respondentID']) for g in rids]
+                #	[rtemp.append(g['respondent_id']) for g in rids]
                 #	rtemp = list(set(rtemp))
-                #	self.patient_respondent_vectors.append({'conditionID' : c['conditionID'], 'conditionName' : c['conditionName'], 'edge' : rtemp })
+                #	self.patient_respondent_vectors.append({'condition_id' : c['condition_id'], 'condition_name' : c['condition_name'], 'edge' : rtemp })
                 #
                 #
                 #

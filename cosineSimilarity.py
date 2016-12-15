@@ -9,7 +9,7 @@ import nltk
 class cosine_simiarlity_analyzer():
     def __init__(self, list_of_texts, data):
         """
-        @param list_of_texts List of dictionaries containing tokenized word bags each with a 'quoteID' and 'quoteText' or 'tokens' attributes
+        @param list_of_texts List of dictionaries containing tokenized word bags each with a 'quote_id' and 'quote_text' or 'tokens' attributes
         """
         self.similar_quotes = []
         # Will hold list of dictionaries with rootID, friendID, tfidf_score
@@ -22,7 +22,7 @@ class cosine_simiarlity_analyzer():
         self.texts = []
         for bag in list_of_texts:
             try:
-                self.texts.extend(bag['quoteText'])
+                self.texts.extend(bag['quote_text'])
             except:
                 self.texts.extend(bag['tokens'])
 
@@ -33,11 +33,11 @@ class cosine_simiarlity_analyzer():
         # returns a tf-idf score for the term in the document
         self.td_matrix = {}
         for idx in range(len(self.data)):
-            post = self.data[idx]['quoteText']
+            post = self.data[idx]['quote_text']
             fdist = nltk.FreqDist(post)
-            doc_title = self.data[idx]['quoteID']
+            doc_title = self.data[idx]['quote_id']
             try:
-                link = self.data[idx]['quoteText']
+                link = self.data[idx]['quote_text']
             except:
                 link = self.data[idx]['tokens']
 

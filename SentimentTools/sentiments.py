@@ -1,7 +1,7 @@
 """
 This seems to be an example of how to use sentiwordnet
 """
-from sentiWordInterface import SentiWordNetCorpusReader
+from SentimentTools.sentiWordInterface import SentiWordNetCorpusReader
 
 swn_filename = 'SentiWordNet_3.0.0_20120510.txt'
 swn = SentiWordNetCorpusReader(swn_filename)

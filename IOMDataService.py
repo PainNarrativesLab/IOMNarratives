@@ -52,7 +52,7 @@ class IOMService(IOMProjectDAO):
         self.keys = list(db.keys())
         for k in self.keys:
             s = db[k]
-            self.names.append(s['quoteID'])
+            self.names.append(s['quote_id'])
             self.posSent.append(s['avgPos'])
             self.negSent.append(s['avgNeg'])
             self.netSent.append(s['netSent'])
